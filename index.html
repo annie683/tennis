@@ -299,6 +299,17 @@ select{font-family:var(--fb);font-size:13.5px}
 .chatrail>header b{font-family:var(--fd);font-size:14.5px;font-weight:600}
 .chatrail>header a{margin-left:auto;font-size:11.5px;white-space:nowrap}
 .chatrail iframe{flex:1;width:100%;border:0;display:block;background:var(--ground)}
+.chatrail>header button{font:inherit;font-size:15px;line-height:1;color:var(--muted);
+        background:none;border:0;cursor:pointer;padding:2px 0 2px 4px}
+.chatrail>header button:hover{color:var(--clay-ink)}
+/* 收起來以後留一條直立標籤，點了再展開——不留入口的話沒人找得回來 */
+.railshow{display:none;position:sticky;top:0;height:100vh;width:34px;font:inherit;
+          writing-mode:vertical-rl;align-items:center;justify-content:center;gap:8px;
+          border:0;border-left:1px solid var(--line);background:var(--surface);
+          color:var(--muted);font-size:12.5px;letter-spacing:.08em;cursor:pointer}
+.railshow:hover{background:var(--clay-soft);color:var(--clay-ink)}
+.shell.norail .chatrail{display:none}
+.shell.norail .railshow{display:flex}
 /* 版面不夠寬就收起來，改用篩選列那顆按鈕開新分頁——手機三欄一定擠爆 */
 @media (max-width:1200px){
   .shell{grid-template-columns:minmax(0,1fr)}
@@ -314,7 +325,7 @@ select{font-family:var(--fb);font-size:13.5px}
     <div class="mast-txt">
     <div class="kicker">Taipei · Tennis Court Availability</div>
     <h1>臺北網球場空場地圖</h1>
-    <p class="standfirst">臺北市 14 座河濱公園網球場以及其他市有球場，資料直接來自體育局場館租借系統 2.0。</p>
+    <p class="standfirst">臺北市 14 座河濱公園網球場（資料直接來自體育局場館租借系統 2.0）、其他市有球場（委外經營故抓不到預約資料）。</p>
       <div class="stamp" id="stamp"></div>
     </div>
     <div class="wx" id="wx"></div>
@@ -437,9 +448,14 @@ select{font-family:var(--fb);font-size:13.5px}
 </div>
 
   <aside class="chatrail" id="chatrail" hidden>
-    <header><b>約球聊天室</b><a id="railOpen" target="_blank" rel="noopener">開新分頁 ↗</a></header>
+    <header>
+      <b>約球聊天室</b>
+      <a id="railOpen" target="_blank" rel="noopener">開新分頁 ↗</a>
+      <button id="railHide" title="隱藏側欄" aria-label="隱藏側欄">✕</button>
+    </header>
     <iframe id="railFrame" title="約球聊天室" loading="lazy"></iframe>
   </aside>
+  <button class="railshow" id="railShow" hidden>約球聊天室 ‹</button>
 
 </div>
 
@@ -867,10 +883,27 @@ function render(){
        embed=1 讓聊天室隱藏自己的大標題，不然側欄裡會出現重複的抬頭。 */
     const rail = $("#chatrail");
     if (rail){
-      const sep = DATA.boardUrl.indexOf("?") < 0 ? "?" : "&";
-      $("#railFrame").src = DATA.boardUrl + sep + "embed=1";
+      const sep  = DATA.boardUrl.indexOf("?") < 0 ? "?" : "&";
+      const src  = DATA.boardUrl + sep + "embed=1";
+      const fr   = $("#railFrame"), shell = $(".shell"), show = $("#railShow");
       $("#railOpen").href = DATA.boardUrl;
-      rail.hidden = false;
+      rail.hidden = false; show.hidden = false;
+
+      /* 收起時把 iframe 的 src 清掉：不然它會一直每 5 秒去問一次，
+         白白吃掉 Apps Script 的每日執行時間額度。展開時再接回來。 */
+      const setRail = (on) => {
+        shell.classList.toggle("norail", !on);
+        if (on && fr.src !== src) fr.src = src;
+        if (!on) fr.removeAttribute("src");
+        try { localStorage.setItem("tennisRail", on ? "on" : "off"); } catch(e){}
+      };
+      /* 預設收起來（2026-07-28 Annie 指示）：主角是空場表，
+         要約球的人自己點右邊那條標籤展開；展開過就記住。 */
+      let want = "off";
+      try { want = localStorage.getItem("tennisRail") || "off"; } catch(e){}
+      setRail(want === "on");
+      $("#railHide").onclick = () => setRail(false);
+      show.onclick           = () => setRail(true);
     }
   }
 
