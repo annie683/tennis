@@ -249,12 +249,22 @@ select{font-family:var(--fb);font-size:13.5px}
 .plan .zone i{font-style:normal;font-family:var(--fm);font-size:11px;background:var(--raise);
               border:1px solid var(--line);border-radius:1px;padding:3px 7px}
 .plan .gapx{font-size:10.5px;color:var(--muted)}
-.sitebox .lay{display:flex;align-items:baseline;gap:8px;margin:2px 0 3px}
-.sitebox .lay b{font-size:12.5px;font-weight:600}
-.sitebox .lay i{font-style:normal;font-family:var(--fm);font-size:10.5px;color:var(--muted)}
-.sitebox .layrows{display:grid;grid-template-columns:auto 1fr;gap:1px 12px;margin:0 0 9px}
-.sitebox .layrows dt{font-size:12px;color:var(--ink-2);white-space:nowrap;font-weight:400;padding:0}
-.sitebox .layrows dd{font-size:12px;color:var(--muted);margin:0;border:0;padding:0}
+/* 場地配置示意圖：一個方框＝一面球場，顏色＝開放方式，右上角點＝夜間照明 */
+.plan2{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:2px 0 7px}
+.zone2>span{display:block;font-family:var(--fm);font-size:9.5px;color:var(--muted);margin-bottom:4px}
+.zone2>div{display:flex;gap:3px;flex-wrap:wrap;max-width:280px}
+.ct{font-style:normal;font-family:var(--fm);font-size:11px;line-height:1;position:relative;
+    min-width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;
+    border-radius:2px;border:1px solid var(--line-2);background:var(--raise);color:var(--ink-2)}
+.ct.book{background:var(--free-soft);border-color:var(--free-line);color:var(--free)}
+.ct.walk{background:transparent;border-style:dashed;color:var(--muted)}
+.ct.unk{opacity:.55}
+.ct.lit::after{content:"";position:absolute;top:1.5px;right:1.5px;width:4px;height:4px;
+               border-radius:50%;background:#c8922e}
+.plankey{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;
+         color:var(--muted);margin:0 0 8px}
+.plankey .ct{min-width:14px;height:14px;font-size:0;margin-right:2px}
+.plankey .warn{color:var(--clay-ink)}
 .sitebox figure{margin:0}
 .sitebox img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:2px}
 .sitebox figcaption{font-size:11px;color:var(--muted);margin-top:4px}
@@ -688,14 +698,11 @@ function renderDay(){
         h += `<details class="rulebox"><summary>收費與使用規範（${R.more.length} 項）</summary>
               <p>${R.more.map(esc).join("\n")}</p></details>`;
       const L = (DATA.layout || {})[venue];
-      const auto = siteLayout(g.list);
+      const auto = siteLayout(g.list, L);
       if (L || auto){
         h += `<details class="sitebox"><summary>場地位置與配置</summary><div>`;
         if (auto) h += auto;
         if (L && L.note) h += `<p>${L.note.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</p>`;
-        if (L && L.blocks) h += `<div class="plan">` + L.blocks.map(([label, courts]) =>
-          `<div class="zone"><span>${esc(label)}</span><div>${
-            courts.map(n => `<i>${esc(n)}</i>`).join("")}</div></div>`).join(`<div class="gapx">中間隔開</div>`) + `</div>`;
         if (L && L.img) h += `<figure><img src="${L.img}" alt="${esc(venue)}場地位置圖" loading="lazy">
                          ${L.photoCaption ? `<figcaption>${esc(L.photoCaption)}</figcaption>` : ``}</figure>`;
         h += `</div></details>`;
@@ -763,45 +770,67 @@ const RIVERS = DATA.rivers || [];
    courtRules 逐面給 onsite／startHour／endHour／night。
    球場名稱裡的括號（橋下、社子岸、網）本身就是位置資訊，一併保留。
    沒有一項是我補的——查不到就不顯示那一欄。 */
-function siteLayout(list){
+function siteLayout(list, manual){
   if (!list || !list.length) return "";
   const CR = DATA.courtRules || {}, GR0 = DATA.groupRules || {};
-  const byGroup = new Map();
+
+  /* 每一面的狀態：全部來自體育局逐面資料，沒有推測 */
+  /* 方框上要顯示的短標籤：優先取數字（第01面→1）；沒有數字的（網球場A(社子岸)）
+     就把括號和群組名去掉，剩下的 A／B 就是識別碼，不要把整串名稱塞進小方框。 */
+  const tag = c => {
+    const bare = c.court.replace(/[（(][^）)]*[）)]/g, "").trim();   // 去掉 (社子岸) 這類位置註記
+    const d = bare.match(/\d+/);
+    if (d) return d[0].replace(/^0+(?=\d)/, "");                    // 第01面 → 1
+    const alpha = bare.match(/[A-Za-z]$/);
+    if (alpha) return alpha[0];                                     // 網球場A → A
+    return bare.slice(-2) || c.court;
+  };
+  const st = new Map();               // 短標籤 → {onsite, night, name}
   for (const {c} of list){
-    if (!byGroup.has(c.group_id)) byGroup.set(c.group_id, {name:c.group, courts:[]});
-    byGroup.get(c.group_id).courts.push(c);
+    const r = CR[c.id] || {};
+    st.set(tag(c), {onsite: r.onsite, night: r.night === true, name: c.court, c});
   }
-  let out = "", lastSpec = "";
-  for (const [gid, grp] of byGroup){
-    let spec = (GR0[String(gid)] || {}).spec || "";
-    // 同一場館各群組常回傳一模一樣的規格字串（百齡三群都是同一句），重複顯示只是雜訊
-    if (spec && spec === lastSpec) spec = ""; else if (spec) lastSpec = spec;
-    /* 相鄰且條件相同的面收成一段：中正就會變成「第1面–第3面 現場排隊」
-       「第4面–第6面 可線上預約・有夜間照明」 */
-    const runs = [];
-    for (const c of grp.courts){
-      const r = CR[c.id] || {};
-      /* 括號裡的字（橋下、社子岸、網）是位置，不同位置不能併成同一段——
-         不然華中會出現「第04面(橋下)–第06面」這種橫跨橋下與非橋下的誤導標示。 */
+  const box = (num, o) => {
+    const cls = o.onsite === true ? "walk" : o.onsite === false ? "book" : "unk";
+    const tip = [o.name, o.onsite === true ? "現場排隊輪流" : o.onsite === false ? "可線上預約" : "開放方式未載明",
+                 o.night ? "有夜間照明" : ""].filter(Boolean).join("・");
+    return `<i class="ct ${cls}${o.night ? " lit" : ""}" title="${esc(tip)}">${esc(num)}</i>`;
+  };
+
+  let out = `<div class="plan2">`;
+
+  if (manual && manual.blocks){
+    /* 有實地方位就照實地畫（目前只有中正），並套上同一組顏色編碼 */
+    out += manual.blocks.map(([label, nums]) =>
+      `<div class="zone2"><span>${esc(label)}</span><div>${
+        nums.map(n => st.has(String(n)) ? box(String(n), st.get(String(n)))
+                                        : `<i class="ct unk">${esc(n)}</i>`).join("")
+      }</div></div>`).join(`<div class="gapx">中間隔開</div>`);
+  } else {
+    /* 沒有實地方位就依編號排，並在標題明講「非實際方位」 */
+    const groups = new Map();
+    for (const {c} of list){
       const where = (c.court.match(/[（(]([^）)]+)[）)]/) || [,""])[1];
-      const sig = [r.onsite, r.startHour, r.endHour, r.night, where].join("|");
-      const last = runs[runs.length-1];
-      if (last && last.sig === sig) last.courts.push(c);
-      else runs.push({sig, r, courts:[c]});
+      const key = c.group_id + "|" + where;
+      if (!groups.has(key)) groups.set(key, {name:c.group, where, gid:c.group_id, nums:[]});
+      groups.get(key).nums.push(tag(c));
     }
-    out += `<div class="lay"><b>${esc(grp.name)}</b>${spec ? `<i>${esc(spec)}</i>` : ``}</div><dl class="layrows">`;
-    for (const run of runs){
-      const names = run.courts.map(c => c.court);
-      const label = names.length === 1 ? names[0] : `${names[0]}–${names[names.length-1]}`;
-      const r = run.r, bits = [];
-      bits.push(r.onsite === true ? "現場排隊輪流" : r.onsite === false ? "可線上預約" : "開放方式未載明");
-      if (r.startHour != null && r.endHour != null)
-        bits.push(`${String(r.startHour).padStart(2,"0")}–${String(r.endHour+1).padStart(2,"0")} 點`);
-      if (r.night === true) bits.push("有夜間照明");
-      out += `<dt>${esc(label)}</dt><dd>${esc(bits.join("・"))}</dd>`;
-    }
-    out += `</dl>`;
+    let lastSpec = "";
+    out += [...groups.values()].map(g2 => {
+      let spec = (GR0[String(g2.gid)] || {}).spec || "";
+      if (spec && spec === lastSpec) spec = ""; else if (spec) lastSpec = spec;
+      const gname = g2.name.replace(/[（(][^）)]*[）)]/g, "").trim();
+      const cap = [[gname, g2.where].filter(Boolean).join("・"), spec].filter(Boolean).join("　");
+      return `<div class="zone2"><span>${esc(cap)}</span><div>${
+        g2.nums.map(n => box(n, st.get(n) || {})).join("")}</div></div>`;
+    }).join("");
   }
+
+  out += `</div><p class="plankey">`
+    + `<i class="ct book">▪</i>可線上預約　<i class="ct walk">▪</i>現場排隊輪流　`
+    + `<i class="ct book lit">▪</i>有夜間照明`
+    + (manual && manual.blocks ? `` : `　<span class="warn">方框依編號排列，非實際方位</span>`)
+    + `</p>`;
   return out;
 }
 
