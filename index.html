@@ -89,6 +89,14 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 .wx-grid i.wet2{color:#fff;background:var(--clay);border-radius:2px;padding:0 4px;font-weight:700}
 .wx-grid i.na{color:var(--line-2)}
 .wx-src{font-family:var(--fm);font-size:10px;color:var(--muted)}
+.wxtabs{display:flex;gap:0;margin-bottom:1px}
+.wxtab{font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer;color:var(--muted);
+       border:1px solid var(--line-2);background:transparent}
+.wxtab:first-child{border-radius:2px 0 0 2px;border-right:0}
+.wxtab:last-child{border-radius:0 2px 2px 0}
+.wxtab[aria-selected="true"]{background:var(--clay-soft);border-color:var(--clay);
+       color:var(--clay-ink);font-weight:600}
+.wx-grid .t.hi{color:var(--clay-ink);font-weight:700}
 @media (max-width:900px){
   .mast{gap:16px}
   .wx{align-items:flex-start}
@@ -477,6 +485,7 @@ const NOTES = DATA.notes || {};
 
 const state = {
   date:null, h0:DEF.h0, h1:DEF.h1, run:DEF.run,
+  wx:(() => { try { return localStorage.getItem("tennisWx") || "pop"; } catch(e){ return "pop"; } })(),
   kinds:new Set(DEF.kinds), dist:"",
   tab:"day"
 };
@@ -852,36 +861,73 @@ function wxIcon(t){
   if (t.includes("晴")) return "☀";
   return "·";
 }
-function renderWx(){
+/* 天氣序列：沒篩行政區時給「全臺北市」。
+   降雨機率 12 區完全相同（Open-Meteo 約 11km 網格涵蓋整個市區，實測 12 區同值），
+   所以直接取共同值；氣溫各區差 1 度左右，取全市的最低～最高當區間。 */
+function wxSeries(){
   const all = DATA.weather || {};
-  const dist = (state.dist && all[state.dist]) ? state.dist : "中正區";
-  /* 一律從「今天」起算：資料是抓取當天起七天，隔天再看第一欄就變成昨天了
-     （2026-07-29 Annie 指正）。把今天之前的切掉，剩幾天就顯示幾天，
-     當天的排程更新後自然又是完整七天。 */
-  const rows = (all[dist] || []).filter(r => r.date >= TODAY());
+  if (state.dist && all[state.dist]) return { name: state.dist, rows: all[state.dist] };
+  const names = Object.keys(all);
+  if (!names.length) return null;
+  const num = xs => xs.filter(v => v != null);
+  const rows = (all[names[0]] || []).map((r, i) => {
+    const day = names.map(n => (all[n] || [])[i]).filter(Boolean);
+    const pick = f => { const v = num(day.map(d => d[f])); return v.length ? Math.round(v.reduce((x,y)=>x+y,0)/v.length) : null; };
+    const lo = num(day.map(d => d.tmin)), hi = num(day.map(d => d.tmax));
+    return Object.assign({}, r, { m: pick("m"), a: pick("a"), e: pick("e"),
+      tmin: lo.length ? Math.min(...lo) : null, tmax: hi.length ? Math.max(...hi) : null });
+  });
+  return { name: "全臺北市", rows };
+}
+
+function renderWx(){
   const box = $("#wx");
+  const ser = wxSeries();
+  if (!ser){ box.innerHTML = ""; return; }
+  /* 一律從「今天」起算：資料是抓取當天起七天，隔天再看第一欄就變成昨天了。
+     把今天之前的切掉，剩幾天就顯示幾天，當天的排程更新後自然又是完整七天。 */
+  const rows = ser.rows.filter(r => r.date >= TODAY());
   if (!rows.length){ box.innerHTML = ""; return; }
-  const cell = v => v == null ? `<i class="na">—</i>`
+
+  const pop = v => v == null ? `<i class="na">—</i>`
     : `<i class="${v >= 70 ? "wet2" : v >= 50 ? "wet" : ""}">${v}</i>`;
-  let h = `<div class="wx-grid" style="grid-template-columns:22px repeat(${rows.length},1fr)">`;
   const rowOf = (label, fn, cls) => {
-    let s = `<b class="${cls||""}">${label}</b>`;
-    for (const r of rows) s += fn(r);
-    return s;
+    let s2 = `<b class="${cls||""}">${label}</b>`;
+    for (const r of rows) s2 += fn(r);
+    return s2;
   };
+
+  let h = `<div class="wxtabs" role="tablist">`
+    + `<button class="wxtab" data-wx="pop" aria-selected="${state.wx==="pop"}">降雨機率</button>`
+    + `<button class="wxtab" data-wx="temp" aria-selected="${state.wx==="temp"}">氣溫</button>`
+    + `</div>`;
+  h += `<div class="wx-grid" style="grid-template-columns:22px repeat(${rows.length},1fr)">`;
   h += rowOf("", r => {
     const isToday = r.date === TODAY();
     return `<span class="hd${isToday?" today":""}" title="${esc(r.date)} ${esc(r.desc || "")}">${
       isToday ? "今天" : "週"+WD[new Date(r.date+"T00:00:00").getDay()]}</span>`;
   });
   h += rowOf("", r => `<span class="ic" title="${esc(r.desc || "")}">${wxIcon(r.wn || r.w)}</span>`);
-  h += rowOf("早", r => `<span>${cell(r.m)}</span>`);
-  h += rowOf("午", r => `<span>${cell(r.a)}</span>`);
-  h += rowOf("晚", r => `<span>${cell(r.e)}</span>`, "hi");   // 打球時段
-  h += rowOf("", r => `<span class="t">${r.tmax ?? "–"}°/${r.tmin ?? "–"}°</span>`);
-  h += `</div><div class="wx-src">降雨機率 %（早 06–12／午 12–18／<b>晚 18–24</b>）</div>
-        <div class="wx-src">溫度・天氣＝中央氣象署 ${esc(dist)}；降雨機率＝Open-Meteo 逐小時（約 11km 網格，市區各區大多相同）</div>`;
+  if (state.wx === "temp"){
+    h += rowOf("高", r => `<span class="t hi">${r.tmax ?? "–"}°</span>`);
+    h += rowOf("低", r => `<span class="t">${r.tmin ?? "–"}°</span>`);
+  } else {
+    h += rowOf("早", r => `<span>${pop(r.m)}</span>`);
+    h += rowOf("午", r => `<span>${pop(r.a)}</span>`);
+    h += rowOf("晚", r => `<span>${pop(r.e)}</span>`, "hi");   // 打球時段
+  }
+  h += `</div>`;
+  h += state.wx === "temp"
+    ? `<div class="wx-src">攝氏度・每日最高／最低</div>
+       <div class="wx-src">中央氣象署${ser.name === "全臺北市" ? "（全市 12 區的最低～最高）" : "　"+esc(ser.name)}</div>`
+    : `<div class="wx-src">降雨機率 %（早 06–12／午 12–18／<b>晚 18–24</b>）</div>
+       <div class="wx-src">Open-Meteo 逐小時${ser.name === "全臺北市" ? "・全臺北市（各區同值）" : "　"+esc(ser.name)}；天氣圖示＝中央氣象署</div>`;
   box.innerHTML = h;
+  box.querySelectorAll(".wxtab").forEach(t => t.onclick = () => {
+    state.wx = t.dataset.wx;
+    try { localStorage.setItem("tennisWx", state.wx); } catch(e){}
+    renderWx();
+  });
 }
 
 /** 從今天往後找第一個「至少 5 個場館有空」的日子 */
