@@ -352,22 +352,13 @@ select{font-family:var(--fb);font-size:13.5px}
         </div>
       </label>
       <label class="fld">
-        <span>最少連續空檔</span>
-        <select id="run">
-          <option value="1" selected>不限</option>
-          <option value="2">2 小時</option>
-          <option value="3">3 小時</option>
-          <option value="4">4 小時</option>
-        </select>
+        <span>行政區</span>
+        <select id="dist"><option value="">全部</option></select>
       </label>
       <div class="fld" style="flex:1;min-width:230px">
         <span>場地類型</span>
         <div class="chips" id="kinds"></div>
       </div>
-      <label class="fld">
-        <span>行政區</span>
-        <select id="dist"><option value="">全部</option></select>
-      </label>
       <a class="board fld" id="board" hidden target="_blank" rel="noopener">
         <span>想找人打球</span>
         <i>約球聊天室 ↗</i>
@@ -385,7 +376,6 @@ select{font-family:var(--fb);font-size:13.5px}
     <div class="legend">
       <span><i class="key" style="background:var(--free-soft);box-shadow:inset 0 0 0 1px var(--free-line)"></i>還可以線上預約</span>
       <span><i class="key cell open" style="height:13px"></i>沒人預訂・直接去打</span>
-      <span id="legendPick"><i class="key" style="background:var(--free)"></i>符合你設定的連續時數</span>
       <span><i class="key cell busy" style="height:13px"></i>已被租借</span>
       <span><i class="key" style="background:var(--dead)"></i>未開放</span>
       <span id="dayHint" class="day-hint"></span>
@@ -478,7 +468,7 @@ const $ = s => document.querySelector(s);
 /* 預設篩選（2026-07-28 Annie 指定）：今天・17:00 起・不限連續時數・只看河濱公園。
    結束時間她要 23:00，但全臺北的球場最後一個時段都是 21:00–22:00（endHour 全是 21 或 16），
    22 點以後系統根本沒有格子，所以上限就是 22:00。 */
-const DEF = { h0:17, h1:22, run:1, kinds:["riverside"] };
+const DEF = { h0:17, h1:22, run:1, kinds:["riverside"] };   // run 固定 1＝不限（2026-07-29 撤掉這個篩選器）
 const FAVS = DATA.favorites || [];
 const NOTES = DATA.notes || {};
 
@@ -705,7 +695,7 @@ function renderDay(){
         const onsite = courtWalkIn(c);
         const cls = ch === "1" ? "cell busy"
                   : (ch === "3" || (ch === "0" && onsite)) ? "cell open"
-                  : ch === "0" ? ((hit.has(x) && state.run > 1) ? "cell pick" : "cell free")
+                  : ch === "0" ? "cell free"
                   : "cell";
         const st = ch === "1" ? "已被租借"
                  : (ch === "0" && onsite) ? "這面不開放線上預約・現場輪流"
@@ -891,7 +881,6 @@ function nextBookable(){
 
 function render(){
   for (const t of ["day","info"]) $("#pane-"+t).hidden = state.tab !== t;
-  $("#legendPick").hidden = state.run <= 1;   // 「不限」時沒有這個狀態
   if (state.tab === "day") renderDay();
   renderWx();
 }
@@ -966,7 +955,6 @@ function render(){
       render();
     };
   }
-  $("#run").onchange = e => { state.run = +e.target.value; render(); };
 
   const kindsPresent = new Set(DATA.courts.filter(c => !EXTNAMES.has(c.venue)).map(c => c.kind));
   for (const [k,label] of KINDS.filter(([k]) => kindsPresent.has(k))){
