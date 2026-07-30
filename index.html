@@ -570,7 +570,7 @@ function rpBlock(venue){
        + ((mine || RP_ADMIN) ? `<button class="rpdel" data-del="${r.row}">刪除</button>` : ``)
        + `</div></div>`;
   }
-  h += `<details class="rpnew"><summary>回報現場狀況${list.length ? "" : "（例：某幾面也有照明、開到幾點）"}</summary>`
+  h += `<details class="rpnew"><summary>回報現場狀況</summary>`
      + `<div class="rpform" data-venue="${esc(venue)}">`
      + `<input class="rpname" maxlength="16" placeholder="你的暱稱">`
      + `<input class="rptext" maxlength="200" placeholder="例：1-3 面也有照明，開到 24:00">`
@@ -810,7 +810,6 @@ function renderDay(){
       if (R && R.more.length)
         h += `<details class="rulebox"><summary>收費與使用規範（${R.more.length} 項）</summary>
               <p>${R.more.map(esc).join("\n")}</p></details>`;
-      h += rpBlock(venue);
       const L = (DATA.layout || {})[venue];
       if (L){
         h += `<details class="sitebox"><summary>場地位置與配置</summary><div>`;
@@ -822,6 +821,7 @@ function renderDay(){
                          ${L.photoCaption ? `<figcaption>${esc(L.photoCaption)}</figcaption>` : ``}</figure>`;
         h += `</div></details>`;
       }
+      h += rpBlock(venue);        // 球友回報固定排在最後一個 toggle
     // 整館現場排隊的不畫時段表：系統沒人用，畫出來只是誤導
     for (const {c,row,rs} of (wk === "all" ? [] : g.list)){
       const hit = new Set();
