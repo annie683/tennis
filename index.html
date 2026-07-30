@@ -136,14 +136,6 @@ select{font-family:var(--fb);font-size:13.5px}
      border:0;border-bottom:2px solid transparent;padding:12px 0;margin-bottom:-1px;cursor:pointer}
 .tab[aria-selected="true"]{color:var(--clay-ink);border-bottom-color:var(--clay)}
 
-/* ── summary strip ────────────────────────────────────────────── */
-.summary{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--line);margin:0 -20px 4px;padding:0 20px}
-.stat{padding:14px 30px 13px 0;margin-right:30px;border-right:1px solid var(--line)}
-.stat:last-child{border-right:0}
-.stat b{display:block;font-family:var(--fm);font-size:23px;font-weight:600;line-height:1.1;
-        letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.stat span{font-size:11.5px;color:var(--muted);letter-spacing:.02em}
-.stat.hi b{color:var(--free)}
 
 /* ── legend ───────────────────────────────────────────────────── */
 /* ── 兩欄：地圖固定在左，場館明細在右 ─────────────────────────── */
@@ -180,14 +172,14 @@ select{font-family:var(--fb);font-size:13.5px}
 .day-hint{color:var(--clay-ink)}
 .day-hint button{font:inherit;font-size:12px;color:var(--clay-ink);background:none;border:0;
                  padding:0 0 0 4px;text-decoration:underline;cursor:pointer}
-.legend{display:flex;flex-wrap:wrap;gap:7px 20px;padding:11px 0 15px;font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px 20px;
+        padding:11px 0 15px;font-size:12px;color:var(--muted)}
+.legend #dayHint{margin-right:auto}          /* 提示句頂到最左，圖例整串靠最右 */
+.legend #dayHint:empty{display:none}
 .legend span{display:flex;align-items:center;gap:6px}
 .key{width:15px;height:13px;border-radius:2px;flex:none}
 
 /* ── venue bands ──────────────────────────────────────────────── */
-.ruler{position:sticky;top:59px;z-index:20;background:var(--ground);
-       display:grid;grid-template-columns:var(--lab) 1fr;gap:10px;padding:5px 0 4px;
-       border-bottom:1px solid var(--line)}
 .ruler-h{display:grid;font-family:var(--fm);font-size:10px;color:var(--muted);
          text-align:center;font-variant-numeric:tabular-nums}
 .band{padding:16px 0 4px;border-bottom:1px solid var(--line)}
@@ -206,10 +198,12 @@ select{font-family:var(--fb);font-size:13.5px}
       font-size:12.5px;color:var(--ink-2);max-width:60ch}
 .crow{display:grid;grid-template-columns:var(--lab) 1fr;gap:10px;
       align-items:center;margin-bottom:3px}
-.clab{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px;align-items:center;
-      font-size:12px;color:var(--ink-2)}
-.clab .mk{display:flex;align-items:center;gap:3px}          /* 現場＋夜燈都放這裡 */
-.clab .nm{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clab{display:flex;justify-content:flex-end;align-items:center;gap:5px;
+      font-size:12px;color:var(--ink-2);overflow:hidden}
+/* 標記靠右緊貼面名（2026-07-29 Annie：離第x面太遠）。
+   欄寬固定 32px 不變，所以面名還是對齊在同一條線上。 */
+.clab .mk{display:flex;align-items:center;justify-content:flex-end;gap:3px;width:32px;flex:none}
+.clab .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* 夜間照明：琥珀色小圓點。用顏色而不是圖示，小尺寸下才認得出來 */
 .clab .lit{width:6px;height:6px;border-radius:50%;background:#c8922e;flex:none}
 .litkey{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c8922e;flex:none}
@@ -266,6 +260,31 @@ select{font-family:var(--fb);font-size:13.5px}
 .sitebox figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .onsite{font-style:normal;font-family:var(--fm);font-size:9.5px;color:var(--muted)}
 .tail{font-size:11.5px;color:var(--muted);margin:16px 0 0}
+/* ── 球友場地回報 ─────────────────────────────────────────────── */
+.rp{margin:-2px 0 9px}
+.rpitem{border:1px dashed var(--line-2);border-left:2px solid #c8922e;border-radius:2px;
+        padding:5px 9px 6px;margin-bottom:5px;max-width:64ch;background:var(--raise)}
+.rphd{display:flex;align-items:baseline;gap:8px;font-size:10px}
+.rphd b{font-family:var(--fm);letter-spacing:.06em;color:#a2761f;font-weight:700}
+.rphd span{color:var(--muted)}
+.rpitem p{margin:1px 0 3px;font-size:12.5px;color:var(--ink-2)}
+.rpact{display:flex;gap:5px;align-items:center}
+.rpact button{font:inherit;font-size:10px;padding:1px 6px;border:1px solid var(--line);
+        border-radius:9px;background:transparent;color:var(--muted);cursor:pointer}
+.rpact button:hover:not(:disabled){border-color:var(--clay);color:var(--clay-ink)}
+.rpact button:disabled{opacity:.45;cursor:default}
+.rpact .rpdel{border:0;text-decoration:underline;margin-left:auto}
+.rpnew summary{cursor:pointer;font-size:11.5px;color:var(--muted)}
+.rpnew summary:hover{color:var(--clay-ink)}
+.rpform{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0 0;max-width:64ch}
+.rpform input{font:inherit;font-size:12px;padding:4px 7px;border:1px solid var(--line-2);
+        border-radius:2px;background:var(--raise);color:var(--ink)}
+.rpform .rpname{width:100px}
+.rpform .rptext{flex:1;min-width:180px}
+.rpform .rpsend{font:inherit;font-size:12px;font-weight:600;padding:4px 11px;border-radius:2px;
+        cursor:pointer;border:1px solid var(--clay);background:var(--clay);color:#fff}
+.rpform .rperr{font-size:11px;color:var(--clay-ink)}
+
 /* ── 約球板入口（Apps Script，見 約球板/_README.md） ─────────────── */
 .board{text-decoration:none}
 .board>i{font-style:normal;font-size:13px;font-weight:600;height:33px;display:flex;
@@ -288,9 +307,8 @@ select{font-family:var(--fb);font-size:13.5px}
 
 @media (max-width:720px){
   .page{padding:0 14px 56px}
-  .panel,.tabs,.summary{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}
+  .panel,.tabs{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}
   .panel{position:static}
-  .ruler{position:static}
   :root{--lab:78px}
   .stat{padding-right:18px;margin-right:18px}
   .cell{height:19px}
@@ -383,14 +401,13 @@ select{font-family:var(--fb);font-size:13.5px}
   </div>
 
   <section id="pane-day" role="tabpanel">
-    <div class="summary" id="daySummary"></div>
     <div class="legend">
+      <span id="dayHint" class="day-hint"></span>
       <span><i class="key" style="background:var(--free-soft);box-shadow:inset 0 0 0 1px var(--free-line)"></i>還可以線上預約</span>
       <span><i class="key cell open" style="height:13px"></i>沒人預訂・直接去打</span>
       <span><i class="key cell busy" style="height:13px"></i>已被租借</span>
       <span><i class="key" style="background:var(--dead)"></i>未開放</span>
       <span><i class="litkey"></i>有夜間照明</span>
-      <span id="dayHint" class="day-hint"></span>
     </div>
     <div class="daycols">
       <aside class="mapcol">
@@ -494,6 +511,118 @@ const state = {
 /* 現場排隊的判定：優先用官方 API 的 isOpenOrder（權威，而且是「每一組球場」而非整個場館——
    例如道南 1-2 面與 3 號場不開放線上訂、4-6 面可以）。API 沒給就退回「整段期間零預約紀錄」推定。 */
 const GRULE0 = DATA.groupRules || {};
+/* ── 球友場地回報 ─────────────────────────────────────────────────
+   後端在約球聊天室那個 Apps Script（見 約球板/_README.md）。
+   靜態頁不能對 Apps Script 發 fetch（它不回 CORS 標頭），但 <script> 標籤
+   載入不受 CORS 限制，所以走 JSONP。寫入也只能走 GET，同樣的理由。
+   Claude Artifact 的 CSP 會擋掉這個 script 載入 → 整個區塊不顯示（RP_OK=false），
+   不會留下按了沒反應的按鈕。 */
+let RP = {}, RP_OK = false;
+const RP_MINE = (() => { try { return JSON.parse(localStorage.getItem("tennisRpMine") || "{}"); } catch(e){ return {}; } })();
+const RP_VOTED = (() => { try { return JSON.parse(localStorage.getItem("tennisRpVoted") || "{}"); } catch(e){ return {}; } })();
+const RP_ADMIN = new URLSearchParams(location.search).get("admin") || "";
+
+function jsonp(params){
+  return new Promise((resolve, reject) => {
+    if (!DATA.boardUrl) return reject(new Error("no backend"));
+    const cb = "__rp" + (jsonp._n = (jsonp._n || 0) + 1);
+    const sc = document.createElement("script");
+    const done = () => { clearTimeout(tm); delete window[cb]; sc.remove(); };
+    const tm = setTimeout(() => { done(); reject(new Error("timeout")); }, 15000);
+    window[cb] = d => { done(); (d && d.ok) ? resolve(d) : reject(new Error((d && d.err) || "error")); };
+    sc.onerror = () => { done(); reject(new Error("blocked")); };
+    sc.src = DATA.boardUrl + (DATA.boardUrl.indexOf("?") < 0 ? "?" : "&")
+           + new URLSearchParams(Object.assign({callback: cb}, params)).toString();
+    document.head.appendChild(sc);
+  });
+}
+
+function rpSave(){
+  try {
+    localStorage.setItem("tennisRpMine", JSON.stringify(RP_MINE));
+    localStorage.setItem("tennisRpVoted", JSON.stringify(RP_VOTED));
+  } catch(e){}
+}
+
+async function rpLoad(){
+  try {
+    const d = await jsonp({fn: "reports"});
+    RP = {};
+    for (const r of d.rows) (RP[r.venue] = RP[r.venue] || []).push(r);
+    RP_OK = true;
+    render();
+  } catch(e){ RP_OK = false; }      // 擋掉就靜靜不顯示
+}
+
+/* 一個場館的回報區。刻意用虛線＋「球友回報」標籤跟官方資料區隔——
+   看的人要能一眼分出「體育局說的」和「路人說的」。 */
+function rpBlock(venue){
+  if (!RP_OK) return "";
+  const list = RP[venue] || [];
+  let h = `<div class="rp">`;
+  for (const r of list){
+    const mine = !!RP_MINE[r.row];
+    h += `<div class="rpitem"><div class="rphd"><b>球友回報</b>`
+       + `<span>${esc(r.name)}・${esc(r.at)}</span></div>`
+       + `<p>${esc(r.text)}</p><div class="rpact">`
+       + `<button data-up="${r.row}"${RP_VOTED[r.row+"up"] ? " disabled" : ""}>👍 ${r.up}</button>`
+       + `<button data-bad="${r.row}"${RP_VOTED[r.row+"bad"] ? " disabled" : ""}>有問題 ${r.bad}</button>`
+       + ((mine || RP_ADMIN) ? `<button class="rpdel" data-del="${r.row}">刪除</button>` : ``)
+       + `</div></div>`;
+  }
+  h += `<details class="rpnew"><summary>回報現場狀況${list.length ? "" : "（例：某幾面也有照明、開到幾點）"}</summary>`
+     + `<div class="rpform" data-venue="${esc(venue)}">`
+     + `<input class="rpname" maxlength="16" placeholder="你的暱稱">`
+     + `<input class="rptext" maxlength="200" placeholder="例：1-3 面也有照明，開到 24:00">`
+     + `<button class="rpsend">送出</button>`
+     + `<span class="rperr"></span></div></details></div>`;
+  return h;
+}
+
+function rpWire(){
+  if (!RP_OK) return;
+  const go = async (params, after) => {
+    try { const d = await jsonp(params); after(d); rpSave(); render(); }
+    catch(e){ alert("送出失敗：" + e.message); }
+  };
+  document.querySelectorAll("[data-up]").forEach(b => b.onclick = () => {
+    const row = +b.dataset.up;
+    RP_VOTED[row+"up"] = true;
+    go({fn:"vote", row, kind:"up"}, () => {
+      for (const v in RP) RP[v].forEach(r => { if (r.row === row) r.up++; });
+    });
+  });
+  document.querySelectorAll("[data-bad]").forEach(b => b.onclick = () => {
+    const row = +b.dataset.bad;
+    RP_VOTED[row+"bad"] = true;
+    go({fn:"vote", row, kind:"bad"}, () => {
+      for (const v in RP) RP[v].forEach(r => { if (r.row === row) r.bad++; });
+    });
+  });
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const row = +b.dataset.del;
+    if (!confirm("確定刪掉這則回報？")) return;
+    go({fn:"del", row, token: RP_MINE[row] || "", admin: RP_ADMIN}, () => {
+      for (const v in RP) RP[v] = RP[v].filter(r => r.row !== row);
+      delete RP_MINE[row];
+    });
+  });
+  document.querySelectorAll(".rpform").forEach(f => {
+    const send = f.querySelector(".rpsend"), err = f.querySelector(".rperr");
+    send.onclick = async () => {
+      const name = f.querySelector(".rpname").value.trim();
+      const text = f.querySelector(".rptext").value.trim();
+      if (!name || !text){ err.textContent = "暱稱和內容都要填"; return; }
+      send.disabled = true; err.textContent = "送出中…";
+      try {
+        const d = await jsonp({fn:"add", venue: f.dataset.venue, name, text});
+        RP_MINE[d.row.row] = d.row.token; rpSave();
+        await rpLoad();
+      } catch(e){ err.textContent = "失敗：" + e.message; send.disabled = false; }
+    };
+  });
+}
+
 function courtNight(c){
   const cr = (DATA.courtRules || {})[c.id];
   return !!(cr && cr.night === true);      // 體育局逐面的 night 欄位
@@ -624,12 +753,7 @@ function renderDay(){
   const nVenueFree = [...bands.values()].filter(g => g.free).length;
 
   const wd = WD[new Date(state.date+"T00:00:00").getDay()];
-  $("#daySummary").innerHTML =
-    `<div class="stat"><b>${state.date.slice(5).replace("-","/")}</b><span>週${wd}</span></div>
-     <div class="stat hi"><b>${nVenueFree}</b><span>個場館有空（共列 ${bands.size} 個）</span></div>
-     <div class="stat hi"><b>${nCourt}</b><span>面有空檔</span></div>
-     <div class="stat"><b>${nBookHr}</b><span>小時還訂得到</span></div>
-     <div class="stat"><b>${nOpenHr}</b><span>小時沒人訂</span></div>`;
+  /* 統計數字列已移除（2026-07-29 Annie）——地圖與格線本身就看得出來 */
 
   /* 當天不能線上訂時，只在圖例後面補一行，不用整塊警示框佔版面 */
   const nxt = nextBookable();
@@ -660,9 +784,6 @@ function renderDay(){
       return ka - kb || b[1].free - a[1].free || a[0].localeCompare(b[0], "zh-Hant");
     });
 
-    h += `<div class="ruler"><div></div><div class="ruler-h" style="grid-template-columns:${cols}">`;
-    for (let x = state.h0; x < state.h1; x++) h += `<div>${pad(x)}</div>`;
-    h += `</div></div>`;
 
     for (const [venue,g] of order){
       const c0 = g.c0;
@@ -689,6 +810,7 @@ function renderDay(){
       if (R && R.more.length)
         h += `<details class="rulebox"><summary>收費與使用規範（${R.more.length} 項）</summary>
               <p>${R.more.map(esc).join("\n")}</p></details>`;
+      h += rpBlock(venue);
       const L = (DATA.layout || {})[venue];
       if (L){
         h += `<details class="sitebox"><summary>場地位置與配置</summary><div>`;
@@ -951,6 +1073,7 @@ function render(){
   for (const t of ["day","info"]) $("#pane-"+t).hidden = state.tab !== t;
   if (state.tab === "day") renderDay();
   renderWx();
+  rpWire();            // 場館重畫後回報區的按鈕要重新綁
 }
 
 /* ── init ─────────────────────────────────────────────────────── */
@@ -961,6 +1084,8 @@ function render(){
 
     /* 側欄只在自架網頁存在（Artifact 版本這段標記會被切掉）。
        embed=1 讓聊天室隱藏自己的大標題，不然側欄裡會出現重複的抬頭。 */
+    rpLoad();          // 球友回報：抓不到（Artifact 的 CSP 會擋）就不顯示該區塊
+
     const rail = $("#chatrail");
     if (rail){
       const sep  = DATA.boardUrl.indexOf("?") < 0 ? "?" : "&";
