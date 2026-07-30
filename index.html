@@ -69,17 +69,17 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ── masthead ─────────────────────────────────────────────────── */
-.mast{padding:34px 0 18px;border-bottom:2px solid var(--clay);
-      display:flex;gap:28px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-.mast-txt{flex:1 1 460px;min-width:0}
+.mast{padding:12px 0 8px;border-bottom:2px solid var(--clay);
+      display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.mast-txt{flex:1 1 260px;min-width:0}
 /* ── 未來一週天氣（中央氣象署，抓取時一併存進 data.json） ───────── */
 /* 尺寸鎖死：兩種模式的列數與來源說明長度都不同，不鎖會讓抬頭右側上下左右跳動 */
-.wx{flex:0 0 auto;min-height:196px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.wx{flex:0 0 auto;min-height:142px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .wxrow{display:flex;align-items:flex-start;gap:9px}
-.wx-grid{display:grid;gap:1px 2px;align-items:center;align-content:start;min-height:98px;
+.wx-grid{display:grid;gap:1px 2px;align-items:center;align-content:start;min-height:88px;
          border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:6px 7px}
 .wx-grid>b,.wx-grid>span{font-family:var(--fm);font-variant-numeric:tabular-nums;
-                         text-align:center;font-weight:400;font-size:11px;line-height:1.5}
+                         text-align:center;font-weight:400;font-size:11px;line-height:1.35}
 .wx-grid>b{font-size:9.5px;color:var(--muted);text-align:right;padding-right:2px}
 .wx-grid>b.hi{color:var(--clay-ink);font-weight:700}
 .wx-grid .hd{font-size:10px;color:var(--muted)}
@@ -92,7 +92,7 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 .wx-grid i.na{color:var(--line-2)}
 .wx-src{font-family:var(--fm);font-size:10px;color:var(--muted);text-align:right;line-height:1.5}
 /* 今日一句話：主播在天氣格子左側，句子放對話框，尾巴指向主播 */
-.wxsay{display:flex;align-items:flex-start;gap:4px;width:150px;flex:none;padding-top:14px}
+.wxsay{display:flex;align-items:flex-start;gap:4px;width:150px;flex:none;padding-top:10px}
 .wxsay .who{font-size:16px;line-height:1.1;flex:none}
 .wxsay .bub{position:relative;margin:0;flex:1;min-width:0;
        background:var(--raise);border:1px solid var(--line);border-radius:9px;
@@ -119,36 +119,36 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 }
 .kicker{font-family:var(--fm);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
         color:var(--clay-ink);margin-bottom:9px}
-h1{font-family:var(--fd);font-weight:600;font-size:clamp(27px,4.4vw,38px);line-height:1.12;
-   letter-spacing:-.015em;margin:0 0 10px;text-wrap:balance}
+h1{font-family:var(--fd);font-weight:600;font-size:clamp(20px,2.6vw,26px);line-height:1.15;
+   letter-spacing:-.015em;margin:0;text-wrap:balance}
 .standfirst{color:var(--ink-2);font-size:14.5px;max-width:64ch;margin:0}
 .stamp{margin-top:14px;font-family:var(--fm);font-size:11.5px;color:var(--muted);
        display:flex;flex-wrap:wrap;gap:6px 18px;font-variant-numeric:tabular-nums}
 
 /* ── control panel ────────────────────────────────────────────── */
 .panel{position:sticky;top:0;z-index:30;background:var(--surface);
-       border-bottom:1px solid var(--line);margin:0 -20px;padding:13px 20px 12px}
-.panel-in{max-width:1140px;margin:0 auto;display:flex;flex-wrap:wrap;gap:13px 26px;align-items:flex-end}
-.fld{display:flex;flex-direction:column;gap:5px}
-.fld>span{font-family:var(--fm);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+       border-bottom:1px solid var(--line);margin:0 -20px;padding:6px 20px 6px}
+.panel-in{max-width:1140px;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:1px}
+.fld>span{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .inline{display:flex;gap:6px;align-items:center}
-input[type=date],select{font-family:var(--fm);font-size:13.5px;padding:6px 8px;height:33px;
+input[type=date],select{font-family:var(--fm);font-size:12.5px;padding:3px 7px;height:27px;
   border:1px solid var(--line-2);border-radius:2px;background:var(--raise);color:var(--ink);
   font-variant-numeric:tabular-nums}
 select{font-family:var(--fb);font-size:13.5px}
-.step{font-family:var(--fm);font-size:12px;width:29px;height:33px;border:1px solid var(--line-2);
+.step{font-family:var(--fm);font-size:12px;width:25px;height:27px;border:1px solid var(--line-2);
       border-radius:2px;background:var(--raise);color:var(--ink-2);cursor:pointer}
 .step:hover{border-color:var(--clay);color:var(--clay-ink)}
 .chips{display:flex;gap:5px;flex-wrap:wrap}
-.chip{font-family:var(--fb);font-size:12.5px;padding:5px 11px;border-radius:2px;cursor:pointer;
+.chip{font-family:var(--fb);font-size:12px;padding:3px 10px;border-radius:2px;cursor:pointer;
       border:1px solid var(--line-2);background:transparent;color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--clay-soft);border-color:var(--clay);color:var(--clay-ink);font-weight:600}
 .chip:hover{border-color:var(--clay)}
 
 /* ── tabs ─────────────────────────────────────────────────────── */
-.tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin:0 -20px;padding:0 20px}
-.tab{font-family:var(--fb);font-size:14px;font-weight:600;color:var(--muted);background:none;
-     border:0;border-bottom:2px solid transparent;padding:12px 0;margin-bottom:-1px;cursor:pointer}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin:0 -20px;padding:0 20px}
+  .tab{font-family:var(--fb);font-size:13.5px;font-weight:600;color:var(--muted);background:none;
+     border:0;border-bottom:2px solid transparent;padding:7px 0;margin-bottom:-1px;cursor:pointer}
 .tab[aria-selected="true"]{color:var(--clay-ink);border-bottom-color:var(--clay)}
 
 
@@ -275,6 +275,8 @@ select{font-family:var(--fb);font-size:13.5px}
 .sitebox figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .onsite{font-style:normal;font-family:var(--fm);font-size:9.5px;color:var(--muted)}
 .tail{font-size:11.5px;color:var(--muted);margin:16px 0 0}
+.foot{font-size:11px;color:var(--muted);line-height:1.65;margin:26px 0 0;
+      padding-top:12px;border-top:1px solid var(--line);max-width:80ch}
 /* ── 球友場地回報：一則一行，右側放日期與操作 ────────────────────── */
 .rp{margin:5px 0 2px;max-width:70ch}
 .rpline{display:flex;align-items:center;gap:6px;font-size:12px;padding:2px 0;
@@ -305,7 +307,7 @@ select{font-family:var(--fb);font-size:13.5px}
 
 /* ── 約球板入口（Apps Script，見 約球板/_README.md） ─────────────── */
 .board{text-decoration:none}
-.board>i{font-style:normal;font-size:13px;font-weight:600;height:33px;display:flex;
+.board>i{font-style:normal;font-size:12.5px;font-weight:600;height:27px;display:flex;
          align-items:center;padding:0 13px;border:1px solid var(--clay);border-radius:2px;
          background:var(--clay);color:#fff;white-space:nowrap}
 .board:hover>i{background:var(--clay-ink);border-color:var(--clay-ink)}
@@ -372,10 +374,7 @@ select{font-family:var(--fb);font-size:13.5px}
 
   <header class="mast">
     <div class="mast-txt">
-    <div class="kicker">Taipei · Tennis Court Availability</div>
     <h1>臺北網球場空場地圖</h1>
-    <p class="standfirst">臺北市 14 座河濱公園網球場與其他市有球場，資料直接來自體育局場館租借系統 2.0；委外經營的球場抓不到預約資料，另列於頁尾。</p>
-      <div class="stamp" id="stamp"></div>
     </div>
     <div class="wx" id="wx"></div>
   </header>
@@ -920,6 +919,15 @@ function renderDay(){
     h += `</ul></section>`;
   }
 
+  /* 抬頭已經很擠，所有出處與時間戳集中在頁尾講一次（2026-07-30 Annie） */
+  h += `<p class="foot">臺北市 14 座河濱公園網球場與其他市有球場，`
+    + `場地與檔期資料來自體育局<a href="https://vbs.sports.gov.taipei/venues" target="_blank" rel="noopener">場館租借系統 2.0</a>；`
+    + `委外經營的球場抓不到預約資料，另列於上方。<br>`
+    + `天氣＝中央氣象署（天氣與氣溫）＋ Open-Meteo 逐小時降雨機率（約 11km 網格，臺北市各區同值）。<br>`
+    + `資料擷取 ${DATA.generated}・共 ${DATA.courts.length} 面球場・涵蓋 ${DATA.dateFrom} – ${DATA.dateTo}`
+    + (DATA.ntuStale ? `・<span style="color:var(--clay-ink)">臺大部分為 ${DATA.ntuStale} 的舊快照</span>` : ``)
+    + `</p>`;
+
   out.innerHTML = h;
   renderMap(bands);
   const j = $("#jump");
@@ -1109,11 +1117,11 @@ function renderWx(){
     h += rowOf("晚", r => `<span>${pop(r.e)}</span>`, "hi");   // 打球時段
   }
   h += `</div></div>`;      // 收掉 wx-grid 與 wxrow
+  /* 一行講完：單位＋範圍。完整出處在頁尾（2026-07-30 Annie：抬頭要砍半） */
   h += state.wx === "temp"
-    ? `<div class="wx-src">攝氏度・每日最高／最低</div>
-       <div class="wx-src">中央氣象署${ser.name === "全臺北市" ? "（全市 12 區的最低～最高）" : "　"+esc(ser.name)}</div>`
-    : `<div class="wx-src">降雨機率 %（早 06–12／午 12–18／<b>晚 18–24</b>）</div>
-       <div class="wx-src">Open-Meteo 逐小時${ser.name === "全臺北市" ? "・全臺北市（各區同值）" : "　"+esc(ser.name)}；天氣圖示＝中央氣象署</div>`;
+    ? `<div class="wx-src">°C 每日最高／最低・${ser.name === "全臺北市" ? "全市 12 區區間" : esc(ser.name)}</div>`
+    : `<div class="wx-src">降雨機率 %（早／午／<b>晚 18–24</b>）・${
+         ser.name === "全臺北市" ? "全臺北市" : esc(ser.name)}</div>`;
   box.innerHTML = h;
   box.querySelectorAll(".wxtab").forEach(t => t.onclick = () => {
     state.wx = t.dataset.wx;
@@ -1184,10 +1192,7 @@ function render(){
     `<p style="font-size:13px">各場地共通的制式條文：</p><ul style="font-size:12.5px;color:var(--ink-2);padding-left:20px">`
     + cr.map(l => `<li style="margin-bottom:5px">${esc(l)}</li>`).join("") + `</ul>`;
 
-  $("#stamp").innerHTML =
-    `<span>資料擷取 ${DATA.generated}</span><span>${DATA.courts.length} 面球場</span>
-     <span>涵蓋 ${DATA.dateFrom} – ${DATA.dateTo}</span>`
-    + (DATA.ntuStale ? `<span style="color:var(--clay-ink)">臺大部分為 ${DATA.ntuStale} 的舊快照</span>` : ``);
+  /* 資料時間戳與涵蓋範圍移到頁尾（2026-07-30 Annie：抬頭佔太多空間） */
 
   /* 預設日期＝今天（2026-07-28 Annie 指定）。當月常常已過預約期限而全空，
      所以空狀態會給一個「跳到最近可訂的日子」按鈕，不會讓人卡在空白頁。 */
