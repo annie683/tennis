@@ -200,6 +200,10 @@ select{font-family:var(--fb);font-size:13.5px}
       align-items:center;margin-bottom:3px}
 .clab{font-size:12px;color:var(--ink-2);text-align:right;overflow:hidden;
       text-overflow:ellipsis;white-space:nowrap}
+/* 夜間照明：琥珀色小圓點跟在面名後面。用顏色而不是圖示，小尺寸下才認得出來 */
+.clab .lit{display:inline-block;width:6px;height:6px;border-radius:50%;
+      background:#c8922e;margin-left:4px;vertical-align:1px}
+.litkey{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c8922e;flex:none}
 .strip{display:grid;gap:2px}
 .cell{height:22px;border-radius:2px;background:var(--dead)}
 .cell.free{background:var(--free-soft);box-shadow:inset 0 0 0 1px var(--free-line)}
@@ -378,6 +382,7 @@ select{font-family:var(--fb);font-size:13.5px}
       <span><i class="key cell open" style="height:13px"></i>沒人預訂・直接去打</span>
       <span><i class="key cell busy" style="height:13px"></i>已被租借</span>
       <span><i class="key" style="background:var(--dead)"></i>未開放</span>
+      <span><i class="litkey"></i>有夜間照明</span>
       <span id="dayHint" class="day-hint"></span>
     </div>
     <div class="daycols">
@@ -481,6 +486,11 @@ const state = {
 /* 現場排隊的判定：優先用官方 API 的 isOpenOrder（權威，而且是「每一組球場」而非整個場館——
    例如道南 1-2 面與 3 號場不開放線上訂、4-6 面可以）。API 沒給就退回「整段期間零預約紀錄」推定。 */
 const GRULE0 = DATA.groupRules || {};
+function courtNight(c){
+  const cr = (DATA.courtRules || {})[c.id];
+  return !!(cr && cr.night === true);      // 體育局逐面的 night 欄位
+}
+
 function courtWalkIn(c){
   /* 逐面的 isOpenOrder 最準：中正整組是 True，但第 1/2/3 面各自是 False，
      實地與「四個月零預約紀錄」都吻合。排程 API 的 isOrderAble 對這幾面會誤回 true。*/
@@ -686,8 +696,10 @@ function renderDay(){
     for (const {c,row,rs} of (wk === "all" ? [] : g.list)){
       const hit = new Set();
       rs.forEach(([a,b]) => { for (let x = a; x < b; x++) hit.add(x); });
-      h += `<div class="crow"><div class="clab" title="${esc(c.group)} ${esc(c.court)}">${
-        courtWalkIn(c) && wk !== "all" ? `<em class="onsite">現場</em> ` : ``}${esc(c.court)}</div>
+      h += `<div class="crow"><div class="clab" title="${esc(c.group)} ${esc(c.court)}${
+        courtNight(c) ? "・有夜間照明" : ""}">${
+        courtWalkIn(c) && wk !== "all" ? `<em class="onsite">現場</em> ` : ``}${esc(c.court)}${
+        courtNight(c) ? `<em class="lit" title="有夜間照明"></em>` : ``}</div>
             <div class="strip" style="grid-template-columns:${cols}">`;
       for (let x = state.h0; x < state.h1; x++){
         const ch = row[x-H0] || "";
