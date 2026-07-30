@@ -196,8 +196,8 @@ select{font-family:var(--fb);font-size:13.5px}
 /* 場館註記＝Annie 自己的觀察，用左側 clay 細線標成「手寫層」，與系統資料區隔 */
 .band>.note{margin:-4px 0 9px;padding:2px 0 2px 10px;border-left:2px solid var(--clay);
       font-size:12.5px;color:var(--ink-2);max-width:60ch}
-.crow{display:grid;grid-template-columns:var(--lab) 1fr;gap:1px 10px;
-      align-items:center;margin-bottom:4px}
+.crow{display:grid;grid-template-columns:var(--lab) 1fr;gap:10px;
+      align-items:center;margin-bottom:3px}
 .clab{font-size:12px;color:var(--ink-2);text-align:right;overflow:hidden;
       text-overflow:ellipsis;white-space:nowrap}
 /* 夜間照明：琥珀色小圓點跟在面名後面。用顏色而不是圖示，小尺寸下才認得出來 */
@@ -213,12 +213,8 @@ select{font-family:var(--fb);font-size:13.5px}
            border:1px dashed var(--free-line);border-radius:2px}
 .cell.busy{background:var(--busy-soft);
   background-image:repeating-linear-gradient(45deg,transparent 0 2px,var(--busy) 2px 3px);opacity:.55}
-/* 空檔時間改放在時段條下方（原本在右側佔一欄），時段條才能拉寬 */
-.runs{grid-column:2;font-family:var(--fm);font-size:10.5px;color:var(--free);
-      font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:0 10px;
-      align-items:baseline;padding-bottom:1px}
-.runs:empty{display:none}
-.runs span{white-space:nowrap}
+/* 格線下方的小時刻度（x 軸）。跟 .crow 用同一組欄寬才對得齊 */
+.xaxis{display:grid;grid-template-columns:var(--lab) 1fr;gap:10px;margin-top:3px}
 .runs .more{color:var(--muted)}
 
 /* ── prose ────────────────────────────────────────────────────── */
@@ -717,11 +713,14 @@ function renderDay(){
                  : ch === "3" ? "沒人預訂・直接去" : "未開放";
         h += `<div class="${cls}" title="${esc(c.court)} ${pad(x)}:00 ${st}"></div>`;
       }
-      h += `</div><div class="runs">`;
-      h += rs.slice(0,4).map(r => `<span>${fmt(r)}</span>`).join("");
-      if (rs.length > 4) h += `<span class="more">+${rs.length-4} 段</span>`;
       h += `</div></div>`;
       }
+      /* 小時刻度放在格線下方當 x 軸（2026-07-29 Annie：時間統一顯示一次就好）。
+         上方的吸頂尺規保留——格線一多（彩虹 17 面）捲到中間時還是要有參照。 */
+      if (wk !== "all" && g.list.length)
+        h += `<div class="xaxis"><div></div><div class="ruler-h" style="grid-template-columns:${cols}">`
+           + Array.from({length: state.h1-state.h0}, (_,i) => `<span>${state.h0+i}</span>`).join("")
+           + `</div></div>`;
       h += `</div>`;
     }
   }
@@ -856,9 +855,12 @@ function wxIcon(t){
 function renderWx(){
   const all = DATA.weather || {};
   const dist = (state.dist && all[state.dist]) ? state.dist : "中正區";
-  const rows = all[dist];
+  /* 一律從「今天」起算：資料是抓取當天起七天，隔天再看第一欄就變成昨天了
+     （2026-07-29 Annie 指正）。把今天之前的切掉，剩幾天就顯示幾天，
+     當天的排程更新後自然又是完整七天。 */
+  const rows = (all[dist] || []).filter(r => r.date >= TODAY());
   const box = $("#wx");
-  if (!rows || !rows.length){ box.innerHTML = ""; return; }
+  if (!rows.length){ box.innerHTML = ""; return; }
   const cell = v => v == null ? `<i class="na">—</i>`
     : `<i class="${v >= 70 ? "wet2" : v >= 50 ? "wet" : ""}">${v}</i>`;
   let h = `<div class="wx-grid" style="grid-template-columns:22px repeat(${rows.length},1fr)">`;
