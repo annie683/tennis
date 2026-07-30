@@ -74,8 +74,8 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 .mast-txt{flex:1 1 260px;min-width:0}
 /* ── 未來一週天氣（中央氣象署，抓取時一併存進 data.json） ───────── */
 /* 尺寸鎖死：兩種模式的列數與來源說明長度都不同，不鎖會讓抬頭右側上下左右跳動 */
-.wx{flex:0 0 auto;min-height:142px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-.wxrow{display:flex;align-items:flex-start;gap:9px}
+.wx{flex:0 0 auto;min-height:118px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.wxrow{display:flex;align-items:stretch;gap:9px}
 .wx-grid{display:grid;gap:1px 2px;align-items:center;align-content:start;min-height:88px;
          border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:6px 7px}
 .wx-grid>b,.wx-grid>span{font-family:var(--fm);font-variant-numeric:tabular-nums;
@@ -104,11 +104,12 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 .wxsay .bub::after{left:-5px;top:8px;border-width:4px 5px 4px 0;
        border-color:transparent var(--raise) transparent transparent}
 @media (max-width:900px){ .wxsay{width:auto;max-width:190px} }
-.wxtabs{display:flex;gap:0;margin-bottom:1px}
-.wxtab{font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer;color:var(--muted);
-       border:1px solid var(--line-2);background:transparent}
-.wxtab:first-child{border-radius:2px 0 0 2px;border-right:0}
-.wxtab:last-child{border-radius:0 2px 2px 0}
+.wxtabs{display:flex;flex-direction:column;flex:none;align-self:stretch}
+.wxtab{font:inherit;font-size:10.5px;padding:4px 3px;cursor:pointer;color:var(--muted);
+       border:1px solid var(--line-2);background:transparent;flex:1;white-space:nowrap;
+       writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.1em}
+.wxtab:first-child{border-radius:0 2px 0 0;border-bottom:0}
+.wxtab:last-child{border-radius:0 0 2px 0}
 .wxtab[aria-selected="true"]{background:var(--clay-soft);border-color:var(--clay);
        color:var(--clay-ink);font-weight:600}
 .wx-grid .t.hi{color:var(--clay-ink);font-weight:700}
@@ -1093,10 +1094,12 @@ function renderWx(){
     return s2;
   };
 
-  let h = `<div class="wxtabs" role="tablist">`
-    + `<button class="wxtab" data-wx="pop" aria-selected="${state.wx==="pop"}">降雨機率</button>`
-    + `<button class="wxtab" data-wx="temp" aria-selected="${state.wx==="temp"}">氣溫</button>`
+  /* 切換鈕直書擺在格子右側（2026-07-30 Annie）——橫排要多佔一列高度 */
+  const tabs = `<div class="wxtabs" role="tablist">`
+    + `<button class="wxtab" data-wx="pop" title="降雨機率" aria-selected="${state.wx==="pop"}">降雨</button>`
+    + `<button class="wxtab" data-wx="temp" title="氣溫" aria-selected="${state.wx==="temp"}">氣溫</button>`
     + `</div>`;
+  let h = "";
   /* 欄寬固定 30px（放得下 36°，也放得下 100），高度固定成降雨機率那版的 5 列，
      切換模式時整塊尺寸才不會跳（2026-07-30 Annie）。 */
   h += `<div class="wxrow">${wxVerdict(rows[0])}`
@@ -1115,7 +1118,7 @@ function renderWx(){
     h += rowOf("午", r => `<span>${pop(r.a)}</span>`);
     h += rowOf("晚", r => `<span>${pop(r.e)}</span>`, "hi");   // 打球時段
   }
-  h += `</div></div>`;      // 收掉 wx-grid 與 wxrow
+  h += `</div>${tabs}</div>`;   // 收掉 wx-grid、接上直書切換鈕、再收掉 wxrow
   /* 一行講完：單位＋範圍。完整出處在頁尾（2026-07-30 Annie：抬頭要砍半） */
   h += state.wx === "temp"
     ? `<div class="wx-src">°C 每日最高／最低・${ser.name === "全臺北市" ? "全市 12 區區間" : esc(ser.name)}</div>`
