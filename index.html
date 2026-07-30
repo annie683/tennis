@@ -391,8 +391,8 @@ select{font-family:var(--fb);font-size:13.5px}
           <div class="maphead">
             <span>該時段哪裡去得了</span>
             <div class="maplegend">
-              <span><i class="dot g"></i>一半以上有空</span>
-              <span><i class="dot y"></i>只剩少數</span>
+              <span><i class="dot g"></i>3 面以上</span>
+              <span><i class="dot y"></i>剩 1–2 面</span>
               <span><i class="dot r"></i>全滿</span>
               <span><i class="sq"></i>現場排隊</span>
             </div>
@@ -765,7 +765,9 @@ function renderMap(bands){
     if (m.length !== 2 || !m[0] || !m[1]){ missing.push(venue); continue; }
     let cls;
     if (venueWalk(g.list) === "all") cls = "w";
-    else cls = g.free === 0 ? "r" : (g.free / g.list.length >= 0.5 ? "g" : "y");
+    /* 依「還有幾面」分級，不看比例：標籤上寫的就是面數，圖例得跟它同一套語言。
+       17 面的彩虹剩 8 面在比例上不到一半，但實際上很好約，用比例會誤導。 */
+    else cls = g.free === 0 ? "r" : g.free <= 2 ? "y" : "g";
     pts.push({venue, lat:m[0], lon:m[1], cls, free:g.free, total:g.list.length,
               short: venue.replace("河濱運動公園","").replace("河濱公園","").replace("運動公園","")
                           .replace("(社子岸)","").replace("[福和]","").replace("公園","") || venue,
@@ -812,7 +814,7 @@ function renderMap(bands){
            rx="1" fill="var(--raise)" stroke="var(--muted)" stroke-width="1.6"/>`
       : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${COLOR[p.cls]}"/>`;
     s += `<g class="vdot${p.fav?" fav":""}${p.cls==="w"?" walk":""}" data-v="${esc(p.venue)}">
-      <title>${esc(p.venue)}：${p.cls==="w"?"現場排隊，不開放線上預約":`${p.free}/${p.total} 面有空`}${p.approx?"（座標為概略位置）":""}</title>
+      <title>${esc(p.venue)}：${p.cls==="w"?"現場排隊，不開放線上預約":`${p.free} 面有空（共 ${p.total} 面）`}${p.approx?"（座標為概略位置）":""}</title>
       ${mark}
       <text x="${(left?x-6.5:x+6.5).toFixed(1)}" y="${(y+3.2).toFixed(1)}" text-anchor="${left?"end":"start"}">${esc(p.short)}<tspan class="cnt">${p.cls==="w"?" 排隊":` ${p.free}`}</tspan></text>
     </g>`;
