@@ -812,7 +812,7 @@ function renderMap(bands){
     s += `<g class="vdot${p.fav?" fav":""}${p.cls==="w"?" walk":""}" data-v="${esc(p.venue)}">
       <title>${esc(p.venue)}：${p.cls==="w"?"現場排隊，不開放線上預約":`${p.free}/${p.total} 面有空`}${p.approx?"（座標為概略位置）":""}</title>
       ${mark}
-      <text x="${(left?x-6.5:x+6.5).toFixed(1)}" y="${(y+3.2).toFixed(1)}" text-anchor="${left?"end":"start"}">${esc(p.short)}<tspan class="cnt">${p.cls==="w"?" 排隊":` ${p.free}/${p.total}`}</tspan></text>
+      <text x="${(left?x-6.5:x+6.5).toFixed(1)}" y="${(y+3.2).toFixed(1)}" text-anchor="${left?"end":"start"}">${esc(p.short)}<tspan class="cnt">${p.cls==="w"?" 排隊":` ${p.free}`}</tspan></text>
     </g>`;
   });
   s += `</svg>`;
@@ -828,7 +828,7 @@ function renderMap(bands){
     window.scrollTo({top, behavior:"smooth"});
   });
   const note = box.parentElement.querySelector(".mapnote");
-  note.innerHTML = `點一下圓點跳到該場館。名稱後面是<b>該時段有空的面數／總面數</b>。`
+  note.innerHTML = `點一下圓點跳到該場館。名稱後面是<b>該時段有空的面數</b>。`
     + `位置依實際經緯度換算；河道為實際河道中線，資料 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者（ODbL）。`
     + (pts.some(p=>p.approx) ? `　${pts.filter(p=>p.approx).map(p=>esc(p.venue)).join("、")} 的座標是手動補的概略位置。` : ``)
     + (missing.length ? `　體育局未提供座標、未顯示於圖上：${missing.map(esc).join("、")}。` : ``);
