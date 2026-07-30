@@ -106,7 +106,7 @@ a{color:var(--clay-ink);text-underline-offset:2px}
 @media (max-width:900px){ .wxsay{width:auto;max-width:190px} }
 /* 插畫版主播：球拍網面當對話框，句子用絕對定位疊上去 */
 .wxsay.img{position:relative;width:150px;margin:0;padding:0;display:block}
-.wxsay.img img{width:100%;height:auto;display:block}
+.wxsay.img img,.wxsay.img svg{width:100%;height:auto;display:block}
 .wxsay.img figcaption{position:absolute;display:flex;align-items:center;justify-content:center;
       text-align:center;line-height:1.25;color:var(--ink);padding:2px;
       overflow:hidden;word-break:break-word}
@@ -1070,15 +1070,73 @@ function wxSeries(){
 /* 今日一句話。只看兩個數字：打球時段（晚 18–24）的降雨機率，和當日最高溫。
    下雨優先於熱——場地濕了就不用談中暑了。判斷門檻寫死在這裡，沒有 AI 生成，
    所以同樣的數字永遠給同樣的話。 */
+/* 內建主播插畫（四種天氣）。手繪 SVG，不依賴任何外部圖檔：
+   球拍網面就是對話框，句子用 figcaption 疊在上面。
+   prefs.json 的 mascot 若有 PNG 就優先用那個（見 wxVerdict）。
+   viewBox 100×110；對話框區域約 x36 y4 w60 h40（換算成 % 給 figcaption 用）。 */
+const MASCOT_BUBBLE = {x:36, y:5, w:60, h:56, size:9.5};   // 換算成裁切後 viewBox 的 %
+
+function mascotSvg(kind){
+  const wx = {
+    sun:  `<circle cx="15" cy="16" r="7" fill="#e8b33c"/>
+           <g stroke="#e8b33c" stroke-width="1.8" stroke-linecap="round">
+             <path d="M15 4v3M15 25v3M3 16h3M24 16h3M6.5 7.5l2 2M21.5 22.5l2 2M23.5 7.5l-2 2M8.5 22.5l-2 2"/></g>`,
+    cloud:`<path d="M7 22a4.6 4.6 0 0 1 .5-9.1 6.2 6.2 0 0 1 11.8-1.2A5 5 0 0 1 20 22z"
+             fill="var(--busy-soft)" stroke="var(--line-2)" stroke-width="1.2"/>`,
+    rain: `<path d="M7 20a4.6 4.6 0 0 1 .5-9.1 6.2 6.2 0 0 1 11.8-1.2A5 5 0 0 1 20 20z"
+             fill="var(--busy-soft)" stroke="var(--line-2)" stroke-width="1.2"/>
+           <g stroke="#5b8fc9" stroke-width="1.7" stroke-linecap="round">
+             <path d="M9 24l-1.5 5M14 24l-1.5 5M19 24l-1.5 5"/></g>`,
+    wind: `<g stroke="var(--line-2)" stroke-width="1.8" stroke-linecap="round" fill="none">
+             <path d="M4 13h13a3.5 3.5 0 1 0-3.5-3.5"/>
+             <path d="M4 19h9a3 3 0 1 1-3 3"/>
+             <path d="M6 25h7"/></g>`
+  }[kind] || "";
+
+  /* 只到腰部（viewBox 高 72）：全身在 150px 寬時會高到 165px，把抬頭撐開。
+     主播用半身鏡頭本來就正常。 */
+  return `<svg viewBox="0 0 100 72" class="mascot" role="img"
+       aria-label="氣象主播（${esc(kind)}）">
+    ${wx}
+    <!-- 球拍：網面當對話框 -->
+    <path d="M50 47 L40 62" stroke="#3a4048" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="66" cy="26" rx="31" ry="23" fill="var(--raise)"
+             stroke="#3a4048" stroke-width="3.2"/>
+    <g stroke="var(--line)" stroke-width=".7" opacity=".8">
+      <path d="M45 14v24M53 9v34M61 6v40M69 6v40M77 9v34M85 14v24"/>
+      <path d="M39 18h54M37 26h58M39 34h54"/>
+    </g>
+    <!-- 身體 -->
+    <path d="M25 66q-2 5 0 6h18q2-1 0-6z" fill="var(--busy)" opacity=".92"/>
+    <path d="M24 52h16q4 0 4 5l-1 11H23l-2-11q0-5 3-5z" fill="#fbfbf9"
+          stroke="var(--line-2)" stroke-width=".9"/>
+    <!-- 持拍手 -->
+    <path d="M38 58l6-2 4 2" fill="none" stroke="#f0cdae" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- 頭 -->
+    <path d="M22 45c-4 0-7-3-7-8 0-7 5-12 12-12 6 0 11 4 11 11 0 6-4 9-9 9z" fill="#f0cdae"/>
+    <path d="M15 34q2-11 13-11t12 10z" fill="#5c4433"/>
+    <path d="M14 33h26a2 2 0 0 1 0 4H14a2 2 0 0 1 0-4z" fill="#fbfbf9"
+          stroke="var(--line-2)" stroke-width=".8"/>
+    <path d="M14 35h-7a2 2 0 0 0 0 4h8z" fill="${kind === "rain" ? "#5b8fc9" : "var(--free)"}"
+          stroke="var(--line-2)" stroke-width=".8"/>
+    <path d="M38 30q8-4 9 6t-6 9q4-8-3-15z" fill="#5c4433"/>
+    <circle cx="22" cy="41" r="1.7" fill="#2b2118"/>
+    <circle cx="31" cy="41" r="1.7" fill="#2b2118"/>
+    <path d="M24 45q3 2.6 6 0" fill="none" stroke="#2b2118" stroke-width="1.3" stroke-linecap="round"/>
+  </svg>`;
+}
+
 /* 依當日天氣挑主播圖。順序有意義：下雨最該提醒，其次風大，再看雲量。
    風速從氣象署的敘述文字裡抓「風速N級」，5 級以上算風大（打球會歪）。 */
 function mascotKind(t){
-  const w = (t.wn || t.w || "") + " " + (t.desc || "");
-  const gust = Number((w.match(/風速\s*(\d+)\s*級/) || [,0])[1]);
+  /* ⚠️ 只能用簡短天氣詞（wn/w，例如「多雲時晴」）判斷雨——
+     氣象署的 desc 裡永遠有「降雨機率N%」，拿 desc 測 /雨/ 會天天都是雨天
+     （2026-07-30 實測：降雨 33% 卻選到 rain）。風速只存在 desc 裡，另外抓。 */
+  const w = t.wn || t.w || "";
+  const gust = Number(((t.desc || "").match(/風速\s*(\d+)\s*級/) || [,0])[1]);
   if ((t.e != null && t.e >= 50) || /雨|雷/.test(w)) return "rain";
-  if (gust >= 5 || /陣風/.test(w)) return "wind";
-  if (/陰|多雲/.test(w) && !/晴/.test(w)) return "cloud";
-  if (/多雲/.test(w)) return "cloud";
+  if (gust >= 5 || /陣風/.test(t.desc || "")) return "wind";
+  if (/陰/.test(w) || (/多雲/.test(w) && !/晴/.test(w))) return "cloud";
   return "sun";
 }
 
@@ -1095,14 +1153,13 @@ function wxVerdict(t){
   else s2 = "天氣不錯，很適合打球";
   const M = DATA.mascot || {}, imgs = M.img || {};
   const kind = mascotKind(t);
-  const src = imgs[kind] || imgs.sun;
-  if (!src)   // 沒有圖檔就退回 emoji 版，不留破圖
-    return `<div class="wxsay"><span class="who">👩‍💼🎙️</span><p class="bub">${esc(s2)}</p></div>`;
-  /* 插畫本身的球拍就是對話框，所以句子疊在圖上、不另外畫框。
-     位置與字級走 prefs.json 的 mascot.bubble（%），換圖只要調那幾個數字。 */
-  const b = M.bubble || {x:44, y:5, w:52, h:26, size:10};
-  return `<figure class="wxsay img" data-kind="${kind}">`
-    + `<img src="${src}" alt="氣象主播（${esc(kind)}）" loading="lazy">`
+  /* 優先用 prefs.json 指定的 PNG（Annie 自己的插畫），沒有就用內建的手繪 SVG。
+     兩種都是「球拍網面＝對話框」，句子用 figcaption 疊上去。 */
+  const png = imgs[kind] || imgs.sun;
+  const b = png ? (M.bubble || {x:44, y:5, w:52, h:26, size:10}) : MASCOT_BUBBLE;
+  const art = png ? `<img src="${png}" alt="氣象主播（${esc(kind)}）" loading="lazy">`
+                  : mascotSvg(kind);
+  return `<figure class="wxsay img" data-kind="${kind}">${art}`
     + `<figcaption style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;font-size:${b.size}px">`
     + `${esc(s2)}</figcaption></figure>`;
 }
